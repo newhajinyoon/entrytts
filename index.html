@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>엔트리 TTS 만들기</title>
+    <style>
+        @font-face {
+            font-family: 'Pretendard-Regular';
+            src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'Pretendard-Regular', Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #333;
+        }
+
+        fieldset {
+            border: none;
+            margin: 20px 0;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        legend {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #e9e9e9;
+        }
+
+        legend::after {
+            content: "▼";
+            font-size: 0.8em;
+            color: #333;
+        }
+
+        fieldset.collapsed legend::after {
+            content: "▲";
+        }
+
+        fieldset.collapsed div {
+            display: none;
+        }
+
+        input[type="radio"], input[type="text"], input[type="number"] {
+            margin: 5px 10px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        input[type="button"] {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        input[type="button"]:hover {
+            background-color: #0056b3;
+        }
+
+        input[type="text"][readonly] {
+            background-color: #f4f4f4;
+            border: none;
+        }
+
+        .output {
+            width: 80%;
+            margin: 10px auto;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+        }
+
+        .audio-container {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            width: 40%;
+            margin: 20px auto;
+            display: none;
+        }
+
+        audio {
+            width: 100%;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .speed-control button {
+            background-color: #ddd;
+            border: none;
+            padding: 5px 10px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 0 10px;
+        }
+
+        .speed-control button:hover {
+            background-color: #bbb;
+        }
+
+        .speed-description {
+            font-size: 0.9em;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>엔트리 TTS 제작기 📢</h1>
+    <hr>
+    <fieldset>
+        <legend>속도 🏃‍♂️</legend>
+        <div>
+            <div class="speed-control">
+                <button onclick="changeSpeed(+1)">-</button>
+                <input type="number" id="speed" value="0" min="-5" max="5" readonly>
+                <button onclick="changeSpeed(-1)">+</button>
+            </div>
+            <div class="speed-description" id="speed-description">보통</div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>목소리 🎤</legend>
+        <div>
+            <input type="radio" name="voice" value="kyuri">여성<br>
+            <input type="radio" name="voice" value="jinho">남성<br>
+            <input type="radio" name="voice" value="hana">친절한<br>
+            <input type="radio" name="voice" value="dinna" checked>감미로운<br>
+            <input type="radio" name="voice" value="brown">울리는<br>
+            <input type="radio" name="voice" value="minions">장난스러운<br>
+            <input type="radio" name="voice" value="sally">앙증맞은<br>
+            <input type="radio" name="voice" value="nsabina">마녀<br>
+            <input type="radio" name="voice" value="nmammon">악마<br>
+            <input type="radio" name="voice" value="nmeow">야옹이<br>
+            <input type="radio" name="voice" value="nwoof">멍멍이<br>
+            <input type="radio" name="voice" value="other"><input type="text" id="voice" placeholder="기타">
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>음높이 🎵</legend>
+        <div>
+            <div class="speed-control">
+                <button onclick="changePitch(+1)">-</button>
+                <input type="number" id="pitch" value="0" min="-5" max="5" readonly>
+                <button onclick="changePitch(-1)">+</button>
+            </div>
+            <div class="pitch-description" id="pitch-description">보통</div>
+            <br>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>텍스트 📝</legend>
+        <div>
+            <input type="text" id="text" placeholder="별 헤는 밤" style="width: 50%;">
+            <br>
+        </div>
+    </fieldset>
+    <input type="button" value="만들기" onclick="gen()">
+    <input type="text" id="copyalert" class="output" readonly value='복사되었습니다' style="display:none;">
+    <input type="text" id="url" class="output" readonly onclick="copyurl(this.value)">
+    <div class="audio-container" id="audio-container">
+        <audio controls id="audio-player">
+            <source id="audio-source">
+        </audio>
+    </div>
+    <script>
+        const speedLevels = {
+            "-5": "매우 매우 빠르게",
+            "-4": "매우 빠르게",
+            "-3": "빠르게",
+            "-2": "조금 빠르게",
+            "-1": "매우 조금 빠르게",
+            "0": "보통",
+            "1": "매우 조금 느리게",
+            "2": "조금 느리게",
+            "3": "느리게",
+            "4": "매우 느리게",
+            "5": "매우 매우 느리게"
+        };
+
+        const pitchLevels = {
+            "-5": "매우 매우 높게",
+            "-4": "매우 높게",
+            "-3": "높게",
+            "-2": "조금 높게",
+            "-1": "매우 조금 높게",
+            "0": "보통",
+            "1": "매우 조금 낮게",
+            "2": "조금 낮게",
+            "3": "낮게",
+            "4": "매우 낮게",
+            "5": "매우 매우 낮게"
+        };
+
+        document.querySelectorAll('legend').forEach(legend => {
+            legend.addEventListener('click', () => {
+                legend.parentElement.classList.toggle('collapsed');
+            });
+        });
+
+        function changeSpeed(step) {
+            const speedInput = document.getElementById('speed');
+            let currentSpeed = parseInt(speedInput.value);
+            currentSpeed = Math.max(-5, Math.min(5, currentSpeed + step));
+            speedInput.value = currentSpeed;
+            document.getElementById('speed-description').textContent = speedLevels[currentSpeed];
+        }
+
+        function changePitch(step) {
+            const pitchInput = document.getElementById('pitch');
+            let currentPitch = parseInt(pitchInput.value);
+            currentPitch = Math.max(-5, Math.min(5, currentPitch + step));
+            pitchInput.value = currentPitch;
+            document.getElementById('pitch-description').textContent = pitchLevels[currentPitch];
+        }
+
+        function gen() {
+            const text = document.querySelector('#text').value || "별 헤는 밤";
+            const speed = document.querySelector('#speed').value;
+            const pitch = document.querySelector('#pitch').value;
+            const speaker = document.querySelector('input[name="voice"]:checked').value == "other" ? document.querySelector('#voice').value : document.querySelector('input[name="voice"]:checked').value;
+
+            document.querySelector('#url').value = `https://playentry.org/api/expansionBlock/tts/read.mp3?text=${encodeURI(text)}&speed=${speed}&pitch=${pitch}&speaker=${speaker}`;
+
+            try {
+                document.querySelector('audio').remove();
+            } catch { }
+
+            const audioContainer = document.querySelector('#audio-container');
+            const audioPlayer = document.createElement('audio');
+            const audioSource = document.createElement('source');
+
+            audioPlayer.controls = "true";
+            audioPlayer.style.width = "100%";
+            audioPlayer.style.marginTop = "10px";
+            audioPlayer.style.display = "block";
+            audioSource.src = document.querySelector('#url').value;
+
+            audioPlayer.appendChild(audioSource);
+            audioContainer.appendChild(audioPlayer);
+            audioContainer.style.display = 'block';
+        }
+
+        function copyurl(url) {
+            document.querySelector('#copyalert').style.display = "inline";
+            document.querySelector('#url').style.display = "none";
+            setTimeout(() => {
+                document.querySelector('#copyalert').style.display = "none";
+                document.querySelector('#url').style.display = "inline";
+            }, 1000);
+        }
+    </script>
+    <footer>
+        <nav>
+            <a href='https://firerun.kro.kr/' target='_blank'>Original (firerun)</a> |
+            <a href='https://github.com/newhajinyoon/entrytts' target='_blank'>Github</a>
+        </nav>
+        <p>
+            <span>디스코드 jinyoon </span><br/>
+            <br/>
+        </p>
+    </footer>
+</body>
+
+</html>
